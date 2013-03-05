@@ -5,12 +5,15 @@ _.templateSettings = {
 
 var Forcast = Backbone.Model.extend({
   defaults: {
-    city: 'Not entered',
-    temperature: '0'
+    user_zip: 'Not entered',
+    wunderground_api_key: '0' //Enter your wunderground.com api key here
   },
 
   url: function() { 
-    return 'test_data/test.json' 
+    var zip = this.get('user_zip');
+    var api_key = this.get('wunderground_api_key');
+    console.log( 'http://api.wunderground.com/api/' + api_key + '/conditions/q/' + zip + '.json' );
+    return 'http://api.wunderground.com/api/' + api_key + '/conditions/q/' + zip + '.json'
   },
     
   parse: function(data, xhr) {
@@ -35,16 +38,18 @@ var ForcastView = Backbone.View.extend({
 
   initialize: function() {
     _.bindAll(this, 'render');
-    this.myLocation = new Forcast();
+    this.myLocation = new Forcast({ user_zip: '78240' });
     this.myForcasts = new ForcastCollection([this.myLocation]);
     this.myForcasts.bind('add', this.appendItem);
     var self = this;
     this.myLocation.fetch({ 
+      dataType: 'jsonp',
       success: function() { 
         self.render()
       },
-      error: function() {
+      error: function(data,response) {
         console.log('Fetch error');
+        console.log(response);
       } 
     });
   },
